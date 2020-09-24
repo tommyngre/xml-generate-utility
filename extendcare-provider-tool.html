@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <title>Add provider xml entry
+    </title>
+    <style>
+        body {
+            width: 80%;
+            font-family: candara;
+        }
+
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 16px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1.5rem;
+            margin-top: 20px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: white;
+            color: black;
+            border: 2px solid #4CAF50;
+        }
+
+        input {
+            width: 100%;
+            padding: 20px;
+        }
+
+        .emph{
+            color:crimson;
+            font-weight: 600;
+            font-size:1.1rem;
+        }
+    </style>
+
+</head>
+
+<body>
+    <header>
+        <h1>Enter the values below and this tool will generate the xml needed for an extendedcare provider.</h1>
+        <h2>Instructions</h2>
+        <ul>
+            <li>After entering values into fields, click "Generate xml entry".</li>
+            <li> This will append your xml entry to the bottom of the page.</li>
+            <li>Continue to enter as many entries as you'd like - Entries will continue to be appended.</li>
+            <li>Note: this xml is not persistent - it lives in the browser and if you refresh it will disappear.</li>
+            <li><b>Remember to copy/paste as needed.</b>
+        </ul>
+    </header>
+
+</body>
+<main>
+    <section>
+        <h3>Enter provider's full name</h3>
+        <!-- <p>E.g. "&lt;!-- Rob Johnson - COVID19 - RJ100 --&gt;"</p> -->
+        <p>E.g. "Rob Johnson"</p>
+        <input type="text" id="provname" placeholder="e.g. 'Rob Johnson'" required>
+        <h3>Enter provider's workstation Id</h3>
+        <p>E.g. "RJ100"</p>
+        <input type="text" id="workstationId" placeholder="e.g. 'RJ100'" required>
+    </section>
+    <!--<section>
+        <h1>workstationId</h1>
+        <h2>notes:</h2>
+        <p>this tool will convert workstationId to all caps.</p>
+        <input type="text" id="workstationId" placeholder="e.g. 'RJ100'"> 
+    </section>-->
+    <section>
+        <h3>Enter endpointId</h3>
+        <p class="emph">Do not enter the suffix "_jabber". This tool will add the suffix "_jabber" to the end of the endpointId and
+            ensure it is all lowercase</p>
+        <p>E.g. If you enter "Johnson" it will become "Johnson_jabber" in the xml entry.</p>
+        <input type="text" id="endpointId" placeholder="e.g. entering 'Johnson' will yield'Johnson_jabber'" required>
+    </section>
+    <button id="submit">Generate xml</button>
+
+    <h1>Xml entries will append below.</h1>
+    <div id="xml"></div>
+
+</main>
+
+
+<script>
+    let xml = "";
+    $('#submit').click(function () {
+        let provname = $('#provname').val();
+        let workstationId = $('#workstationId').val().toUpperCase();
+        let endpointId = $('#endpointId').val().toLowerCase();
+
+        xml += `
+        <!-- ${provname} - COVID19 - ${workstationId} -->
+    <workstation>
+        <workstationId>${workstationId}</workstationId>
+        <workstationKey>${workstationId}</workstationKey>
+		<web>
+            <endpoint>
+                <endpointId>rem1</endpointId>
+                <endpointName>Browser</endpointName>
+                <endpointKey>rem1</endpointKey>
+                <endpointType>REM</endpointType>
+                <ucServerId>default-rem</ucServerId>
+                <ucServerGroupId>default-rem</ucServerGroupId>
+            </endpoint>
+        </web>
+        <preconfig>
+            <endpoint>
+                <endpointId>${endpointId + "_jabber"}</endpointId>
+                <endpointKey>${endpointId + "_jabber"}</endpointKey>
+            </endpoint>
+        </preconfig>
+    </workstation>
+
+    `;
+        $('#xml').text(xml);
+    })
+
+</script>
+
+</html>
+
+<!-- Example entry
+    // Rob Johnson - COVID19 - RJ100
+    <workstation>
+        <workstationId>RJ100</workstationId>
+        <workstationKey>RJ100</workstationKey>
+		<web>
+            <endpoint>
+                <endpointId>rem1</endpointId>
+                <endpointName>Browser</endpointName>
+                <endpointKey>rem1</endpointKey>
+                <endpointType>REM</endpointType>
+                <ucServerId>default-rem</ucServerId>
+                <ucServerGroupId>default-rem</ucServerGroupId>
+            </endpoint>
+        </web>
+        <preconfig>
+            <endpoint>
+                <endpointId>Johnson_jabber</endpointId>
+                <endpointKey>Johnson_jabber</endpointKey>
+            </endpoint>
+        </preconfig>
+    </workstation>
+-->

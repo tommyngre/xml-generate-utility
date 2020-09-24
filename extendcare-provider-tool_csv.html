@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <title>Add provider xml entry (csv edition)
+    </title>
+    <style>
+        body {
+            width: 80%;
+            font-family: candara;
+        }
+
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 16px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1.5rem;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: white;
+            color: black;
+            border: 2px solid #4CAF50;
+        }
+
+        input {
+            width: 100%;
+            padding: 20px;
+        }
+
+        .emph {
+            color: crimson;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        textarea{
+            width:100%;
+            height:200px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <main>
+
+        <section>
+            <h3>Upload a csv file.</h3>
+            <h2>Instructions</h2>
+            <ul>
+                <li>Open the xls/xlsx file, open it in Excel</li>
+                <li>There must be only one sheet. Delete any sheets you don't need.</li>
+                <ul>
+                    <li>E.g. with the document passed along for testing (3_27_Providers_RITM3181654.xlsx), there was a
+                        "Sheet 3" which had no data on it. You'll need to delete this before the tool works</li>
+                </ul>
+                <li>File > Save As > Save as type "CSV"</li>
+                <li>Select the file below</li>
+                <li>The tool will start parsing the file and the xml will generate below. When complete, a "COPY XML" button will appear</li>
+                <li>Click the "COPY" button to copy the xml to you clipboard</li>
+            </ul>
+            </ul>
+            <input type="file" id="csv" accept=".csv" required />
+
+            <button id="copy" style="display:none">COPY XML</button>
+
+            <h1>Xml entries will append below.</h1>
+            <textarea id="xml"></textarea>
+
+    </main>
+
+    <script>
+        let xml = "";
+
+        let copyButton = document.getElementById('copy');
+        let allTheXml = document.getElementById('xml');
+
+        copy.onclick = function() {
+            allTheXml.select();
+            document.execCommand('copy');
+        };
+            
+        $(document).ready(function () {
+            // The event listener for the file upload
+            document.getElementById('csv').addEventListener('change', upload, false);
+
+            // Method that checks that the browser supports the HTML5 File API
+            function browserSupportFileUpload() {
+                var isCompatible = false;
+                if (window.File && window.FileReader && window.FileList && window.Blob) {
+                    isCompatible = true;
+                }
+                return isCompatible;
+            }
+
+            // Method that reads and processes the selected file
+            function upload(evt) {
+                if (!browserSupportFileUpload()) {
+                    alert('The File APIs are not fully supported in this browser!');
+                } else {
+                    var data = null;
+                    var file = evt.target.files[0];
+                    //console.log(file);
+                    var reader = new FileReader();
+                    reader.readAsText(file);
+                    reader.onload = function (event) {
+                        var csvData = event.target.result.split('\n');
+                        csvData.shift();
+                        // csvData.pop();
+                        if (csvData && csvData.length > 0) {
+                            //console.log(csvData.length + " rows imported");
+                            //console.log(csvData);
+                            csvData.forEach(element => {
+                                element = element.split(',');
+                                //console.log(element);
+                                if (element[0].length == 0 || element[1].length == 0 || element[4].length == 0 || element[7].length == 0) {
+                                    xml +=
+                                        `<ERROR>DATA MISSING FROM THIS NODE
+                                            <!-- ${element[0] + ' ' + element[1]} - COVID19 - ${element[7]} -->
+                                            <endpointIdAndKey>${element[4]}</endpointIdAndKey>
+                                    </ERROR>`;
+                                }
+                                else {
+                                    xml += 
+`<!-- ${element[0] + ' ' + element[1]} - COVID19 - ${element[7].toUpperCase()} -->
+<workstation>
+    <workstationId>${element[7].toUpperCase()}</workstationId>
+    <workstationKey>${element[7].toUpperCase()}</workstationKey>
+    <web>
+        <endpoint>
+            <endpointId>rem1</endpointId>
+            <endpointName>Browser</endpointName>
+            <endpointKey>rem1</endpointKey>
+            <endpointType>REM</endpointType>
+            <ucServerId>default-rem</ucServerId>
+            <ucServerGroupId>default-rem</ucServerGroupId>
+        </endpoint>
+    </web>
+    <preconfig>
+        <endpoint>
+            <endpointId>${element[4].toLowerCase()}</endpointId>
+            <endpointKey>${element[4].toLowerCase()}</endpointKey>
+        </endpoint>
+    </preconfig>
+</workstation>
+`;
+                                }
+                                $('#xml').text(xml);
+                            });
+
+                            $('#copy').css("display","inline-block");
+
+                        } else {
+                            console.log("No rows");
+                        }
+                    };
+                    reader.onerror = function () {
+                        alert("Can't read " + file.fileName);
+                    };
+                }
+            }
+        });
+
+    </script>
+</body>
+
+</html>
